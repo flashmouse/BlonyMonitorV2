@@ -188,6 +188,9 @@ func NewApp() *App {
 func (a *App) Startup(ctx context.Context) {
 	a.ctx, a.cancel = context.WithCancel(ctx)
 	migrateLegacyUserData()
+	// 调试支撑：回环 pprof HTTP 口子 + 触发文件轮询（运行中可随时抓一段 profile）。
+	startPprofEndpoint()
+	startPprofTriggerWatcher(ensureUserDataDirectory())
 	if loadAnalysisLogEnabled() {
 		if err := a.startAnalysisLog(); err != nil {
 			logger.Printf("[AnalysisLog] 启动失败: %v", err)
