@@ -348,15 +348,24 @@ func (a *App) capBossHPHistoryUnsafe(id string) {
 	if len(history) <= bossHPHistoryMaxEntries {
 		return
 	}
+	if len(history) == bossHPHistoryMaxEntries+1 {
+		bossTrace("[BossLife] hpHistory 达到上限 entity=%s cap=%d，开始裁剪最早的窗口", id, bossHPHistoryMaxEntries)
+	}
 	a.bossHPHistory[id] = history[len(history)-bossHPHistoryMaxEntries:]
 }
 
 func (a *App) clearBossHP(entityID string) {
 	a.mu.Lock()
+	_, tracked := a.takenStats[entityID]
 	delete(a.bossHP, entityID)
 	delete(a.bossHPWatch, entityID)
 	delete(a.bossHPPending, entityID)
 	a.mu.Unlock()
+	// 诊断：实体被移除（0x520d），但 takenStats / bossHPHistory 都保留，
+	// 因此之后若再来一条 finish，仍会落到这个残留条目上。
+	if tracked {
+		bossTrace("[BossLife] entity-remove target=%s (有伤害记录，takenStats/bossHPHistory 保留未清，仅清 bossHP/bossHPWatch/bossHPPending)", entityID)
+	}
 }
 
 func (a *App) clearAllBossHPUnsafe() {

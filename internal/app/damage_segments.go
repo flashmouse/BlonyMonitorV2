@@ -132,6 +132,7 @@ func (a *App) resetPendingDetailSegmentUnsafe(reason string) bool {
 	if !a.detailResetPending {
 		return false
 	}
+	a.logTargetDurationsUnsafe("segment-reset " + reason)
 	a.foldCurrentDamageIntoCumulativeUnsafe()
 	a.clearDetailDamageStateUnsafe()
 	a.detailResetPending = false

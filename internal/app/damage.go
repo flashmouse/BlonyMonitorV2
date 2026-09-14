@@ -609,6 +609,7 @@ func (a *App) GetDamageTaken() []TargetDamageStats {
 
 		duration := durationSeconds(targetStat.firstHit, endTime)
 		dps := targetTotal / duration
+		a.auditBossDurationUnsafe(targetId, targetStat.name, status, targetStat.firstHit, targetStat.lastHit, targetStat.deathTime, endTime)
 		participants := make(map[string]buffParticipant)
 		for attackerID, attackerStats := range targetStat.attackers {
 			if !attackerStats.isPC {

@@ -139,9 +139,16 @@ func (a *App) addFinishEvent(targetId uint64, attackerId uint64) {
 	}
 
 	if targetStat, ok := a.takenStats[targetIdStr]; ok {
+		prevDeathTime := targetStat.deathTime
 		targetStat.deathTime = now
 		if a.targetTimerMgr != nil {
 			a.targetTimerMgr.OnDeath(targetIdStr)
+		}
+		// 诊断：记录每一次 finish（含重复），prevDeathTime 便于看出是否被“覆盖成更晚”。
+		a.recordFinishTrace(targetIdStr, a.getEntityNameUnsafe(targetIdStr), now, targetStat.firstHit, targetStat.lastHit)
+		if prevDeathTime > 0 {
+			bossTrace("[BossLife] finish 覆盖 deathTime: target=%s old=%d new=%d 推后%.1f秒",
+				targetIdStr, prevDeathTime, now, centisecondsToSeconds(now-prevDeathTime))
 		}
 	}
 
